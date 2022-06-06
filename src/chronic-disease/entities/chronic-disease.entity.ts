@@ -1,4 +1,4 @@
-import { MedicalRecord } from 'src/medical-record/entities/medical-record.entity';
+import { MedicalRecord } from '../../medical-record/entities/medical-record.entity';
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()

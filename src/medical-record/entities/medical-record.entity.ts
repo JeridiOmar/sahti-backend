@@ -1,5 +1,5 @@
-import { ChronicDisease } from 'src/chronic-disease/entities/chronic-disease.entity';
-import { Patient } from 'src/patient/entities/patient.entity';
+import { ChronicDisease } from '../../chronic-disease/entities/chronic-disease.entity';
+import { Patient } from '../../patient/entities/patient.entity';
 import {
   Column,
   Entity,

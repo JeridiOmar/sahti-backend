@@ -11,7 +11,7 @@ import { Gender } from './gender.entity';
 import { classToPlain, Exclude } from 'class-transformer';
 import * as bcrypt from 'bcrypt';
 import { RoleEnum } from './role.enum';
-import { MedicalRecord } from 'src/medical-record/entities/medical-record.entity';
+import { MedicalRecord } from '../../medical-record/entities/medical-record.entity';
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export class Patient {
