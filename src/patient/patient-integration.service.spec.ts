@@ -7,10 +7,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { RoleEnum } from './entities/role.enum';
 import { CivilStatusEnum } from './entities/civil-status.enum';
+import { Repository } from 'typeorm';
+import { AppModule } from '../app.module';
 
 describe('PatientService', () => {
   let service: PatientService;
-  const patient = new Patient();
+  let patientRepository: Repository<Patient>;
   const patients: Patient[] = [
     {
       id: 1,
@@ -71,88 +73,22 @@ describe('PatientService', () => {
       expectedResult: patients[0],
     },
   ];
-  const mockPatientRepository = {
-    preload: jest.fn().mockImplementation(({ patientId, updatePatientDto }) => {
-      const patient = patients.find((patient) => patient.id == patientId);
-      const newPatient: Patient = {
-        phoneNumber: updatePatientDto.phoneNumber,
-        async hashPassword() {
-          const salt = await bcrypt.genSalt();
-          this.password = await bcrypt.hash(this.password, salt);
-        },
-        emailToLowerCase() {
-          this.email = this.email.toLowerCase().trim();
-        },
-        toJSON() {
-          return classToPlain(this);
-        },
-        ...patient,
-      };
-      return newPatient;
-    }),
-    find: jest.fn().mockImplementation(() => {
-      return [];
-    }),
-    findOne: jest.fn().mockImplementation(() => {
-      return patient;
-    }),
-    save: jest.fn().mockImplementation((createPatientDto: CreatePatientDto) => {
-      return { id: 1, ...createPatientDto };
-    }),
-    create: jest
-      .fn()
-      .mockImplementation((createPatientDto: CreatePatientDto) => {
-        return { ...createPatientDto };
-      }),
-    delete: jest.fn().mockImplementation((id) => {
-      return {};
-    }),
-  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        PatientService,
-        {
-          provide: getRepositoryToken(Patient),
-          useValue: mockPatientRepository,
-        },
-      ],
+      imports: [AppModule],
     }).compile();
 
     service = module.get<PatientService>(PatientService);
+    patientRepository = module.get('PatientRepository');
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+    expect(patientRepository).toBeDefined();
   });
   it('should return the list of all patients', async () => {
-    expect(await service.findAll()).toBeDefined();
-    expect(mockPatientRepository.find).toBeCalled();
-    expect(await service.findAll()).toEqual([]);
-  });
-  it('should create a patient ', async () => {
-    const patientId = 1;
-    expect(await service.create(dtos[0].dto)).toBeDefined();
-    expect(mockPatientRepository.save).toBeCalled();
-    expect(mockPatientRepository.create).toBeCalled();
-    expect(await service.create(dtos[0].dto)).toEqual({
-      id: patientId,
-      ...dtos[0].dto,
-    });
-  });
-  it('should return a patient given his id', async () => {
-    const id = 0;
-    expect(await service.findOne(id)).toBeDefined();
-    expect(mockPatientRepository.findOne).toBeCalledWith(id, {
-      relations: ['medicalRecord'],
-    });
-    expect(await service.findOne(id)).toEqual(patient);
-  });
-  it('should call findOne method with expected param', async () => {
-    const patientMail = patients[0].email;
-    expect(await service.findByEmail(patientMail)).toBeDefined();
-    expect(mockPatientRepository.findOne).toHaveBeenCalledWith({
-      where: { email: patientMail },
-    });
+    const allPatients = await service.findAll();
+    expect(allPatients.length).toEqual(0);
   });
 });
